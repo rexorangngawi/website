@@ -4,7 +4,7 @@ import fs from 'fs';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
 export const config = { api: { bodyParser: false } };
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const genAI = new GoogleGenerativeAI(AIzaSyBhtH7yKgjs6NigbeTRXoPxUyv2bE2yPug);
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).send("Use POST");
