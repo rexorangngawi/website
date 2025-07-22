@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Photo Enhancer AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-purple-600 via-cyan-500 to-sky-400 min-h-screen flex flex-col items-center justify-center p-4 text-white">
+  <h1 class="text-4xl font-bold mb-6 text-center">Ubah Background & HD-in Foto</h1>
+
+  <form id="upload-form" class="bg-white/10 p-6 rounded-2xl backdrop-blur-md shadow-xl w-full max-w-md">
+    <input type="file" name="image" accept="image/*" required class="mb-4 w-full text-white" />
+    <button type="submit" class="w-full py-2 bg-green-400 hover:bg-green-300 text-black rounded-xl font-bold">Proses Foto</button>
+  </form>
+
+  <div id="result-box" class="mt-8 hidden flex-col items-center">
+    <img id="result" class="rounded-xl shadow-lg max-w-full h-auto border-4 border-white" />
+    <a id="download" class="mt-4 bg-white/20 px-4 py-2 rounded-xl backdrop-blur-md hover:bg-white/30 text-white font-semibold" download="enhanced_photo.png">Download Hasil</a>
+  </div>
+
+  <script>
+    const form = document.getElementById("upload-form");
+    const resultBox = document.getElementById("result-box");
+    const resultImg = document.getElementById("result");
+    const downloadLink = document.getElementById("download");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const data = new FormData(form);
+      const res = await fetch("/api/enhance-photo", {
+        method: "POST",
+        body: data,
+      });
+
+      if (!res.ok) return alert("Gagal memproses foto.");
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      resultImg.src = url;
+      downloadLink.href = url;
+      resultBox.classList.remove("hidden");
+    });
+  </script>
+</body>
+</html>
