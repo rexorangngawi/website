@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Chat Qwen AI</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    #chat {
+      width: 100%;
+      max-width: 600px;
+      height: 400px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      padding: 10px;
+      overflow-y: auto;
+      background: #1e293b;
+      margin-bottom: 10px;
+    }
+    .msg {
+      margin: 5px 0;
+      padding: 8px;
+      border-radius: 6px;
+      max-width: 80%;
+      word-wrap: break-word;
+    }
+    .user {
+      background: #3b82f6;
+      align-self: flex-end;
+    }
+    .bot {
+      background: #475569;
+      align-self: flex-start;
+    }
+    #inputArea {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+      max-width: 600px;
+    }
+    input {
+      flex: 1;
+      padding: 8px;
+      border-radius: 6px;
+      border: none;
+    }
+    button {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      background: #10b981;
+      color: white;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <h1>Chat Qwen AI</h1>
+  <div id="chat"></div>
+  <div id="inputArea">
+    <input id="userInput" type="text" placeholder="Ketik pesan..." />
+    <button onclick="sendMessage()">Kirim</button>
+  </div>
+
+  <script>
+    const API_URL = "https://api.blackbox.ai/chat/completions";
+    const API_KEY = "ISI_API_KEY_MU"; // jangan taruh asli di client publik
+    const chatId = crypto.randomUUID(); // ID unik tiap sesi
+
+    const chatBox = document.getElementById("chat");
+    const userInput = document.getElementById("userInput");
+
+    function addMessage(text, role) {
+      const div = document.createElement("div");
+      div.className = `msg ${role}`;
+      div.textContent = text;
+      chatBox.appendChild(div);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    async function sendMessage() {
+      const content = userInput.value.trim();
+      if (!content) return;
+      addMessage(content, "user");
+      userInput.value = "";
+
+      const data = {
+        "model": "blackboxai/qwen/qwen3-8b:free",
+        "messages": [
+          {
+            "role": "system",
+            "content": "Chat ID: " + chatId
+          },
+          {
+            "role": "user",
+            "content": content
+          }
+        ],
+        "temperature": 0.7,
+        "max_tokens": 256,
+        "stream": false
+      };
+
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer sk-AgNdtVoRTr-sAD2ILWsucQ`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+
+        const responseData = await response.json();
+        const reply = responseData?.choices?.[0]?.message?.content || "⚠️ Tidak ada jawaban";
+        addMessage(reply, "bot");
+      } catch (err) {
+        addMessage("⚠️ Error: " + err.message, "bot");
+      }
+    }
+  </script>
+</body>
+</html>
