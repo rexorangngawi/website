@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zero</title>
+    <title>Web Dokumen Sederhana</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -15,10 +15,15 @@
         table, th, td {
             border: 1px solid #d1d5db;
         }
+        [contenteditable]:empty:before {
+            content: attr(placeholder);
+            color: #9ca3af;
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8 md:p-12">
     <div id="captureArea" class="max-w-4xl mx-auto bg-white p-6 sm:p-8 rounded-xl shadow-lg border border-gray-200">
+        <!-- Tabel Informasi -->
         <div class="overflow-x-auto mb-6">
             <table class="min-w-full bg-white text-gray-800 border-collapse">
                 <tbody>
@@ -44,15 +49,16 @@
             </table>
         </div>
 
-        <div class="p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-lg text-center bg-gray-50 mb-4" id="photoContainer">
+        <!-- Bagian Foto & Deskripsi -->
+        <div class="p-4 sm:p-6 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50 mb-4" id="photoContainer">
             <img id="previewImage" class="max-w-full h-auto rounded-lg mx-auto mb-4 hidden" alt="Foto Pratinjau">
-            <textarea id="descriptionTextarea" class="w-full h-24 p-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Tulis deskripsi di sini..."></textarea>
+            <div id="descriptionDiv" contenteditable="true" class="w-full h-auto min-h-[100px] p-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 overflow-y-auto resize-y" placeholder="Tulis deskripsi di sini..."></div>
         </div>
     </div>
 
     <input type="file" id="fileInput" accept="image/*" class="hidden">
     
-    <div class="flex flex-col sm:flex-row gap-4 max-w-4xl mx-auto">
+    <div class="flex flex-col sm:flex-row gap-4 max-w-4xl mx-auto mt-6">
         <button id="uploadButton" class="w-full py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-blue-500">
             Unggah Foto
         </button>
@@ -66,9 +72,13 @@
         const fileInput = document.getElementById('fileInput');
         const previewImage = document.getElementById('previewImage');
         const placeholderText = document.getElementById('placeholderText');
-        const descriptionTextarea = document.getElementById('descriptionTextarea');
+        const descriptionDiv = document.getElementById('descriptionDiv');
         const downloadDocumentButton = document.getElementById('downloadDocumentButton');
         const captureArea = document.getElementById('captureArea');
+
+        // Menggunakan CSS untuk placeholder pada div contenteditable
+        // Ini lebih bersih daripada menggunakan JavaScript
+        // Placeholder akan secara otomatis terlihat ketika div kosong
 
         uploadButton.addEventListener('click', () => {
             fileInput.click();
@@ -88,14 +98,42 @@
         });
 
         downloadDocumentButton.addEventListener('click', () => {
-            placeholderText.classList.add('hidden');            
+            if (previewImage.classList.contains('hidden') && descriptionDiv.textContent.trim() === '') {
+                alert('Tolong unggah foto atau tulis deskripsi terlebih dahulu.');
+                return;
+            }
+
+            // Sembunyikan placeholder sebelum capture
+            const placeholderEl = document.querySelector('[contenteditable][placeholder]:empty:before');
+            if (placeholderEl) {
+                placeholderEl.style.display = 'none';
+            }
+            if (placeholderText.classList.contains('hidden') === false) {
+                placeholderText.classList.add('hidden');
+            }
+            
             html2canvas(captureArea, {
-                useCORS: true
+                useCORS: true,
+                scale: 2 
             }).then(canvas => {
                 const a = document.createElement('a');
                 a.href = canvas.toDataURL('image/png');
                 a.download = 'dokumen_lengkap.png';
+                document.body.appendChild(a);
                 a.click();
+                document.body.removeChild(a);
+                
+                if (placeholderEl) {
+                    placeholderEl.style.display = '';
+                }
+                if (previewImage.classList.contains('hidden')) {
+                    placeholderText.classList.remove('hidden');
+                }
+            }).catch(err => {
+                console.error('Error saat membuat canvas:', err);
+                if (placeholderEl) {
+                    placeholderEl.style.display = '';
+                }
                 if (previewImage.classList.contains('hidden')) {
                     placeholderText.classList.remove('hidden');
                 }
